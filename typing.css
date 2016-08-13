@@ -1,0 +1,90 @@
+﻿.typingTimer {
+    padding: 4px 8px;
+    background-color: #c76a11;
+    color:#fff;
+    position:absolute;
+    display:inline-block;
+    right:0;
+    font-size:22px;
+}
+
+typingCode {
+    font-family: 'Ubuntu Mono',monospace;
+    padding: 1em;
+}
+.typingPre {
+    border:1px solid #bbb;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 14px;
+    tab-size: 4;
+    margin: 10px;
+}
+
+.typingPre code {
+    padding: 1em;
+}
+
+.typingIdle,
+.typingIdle span {
+    color: #999 !important;
+    font-weight: normal !important;
+}
+
+.typingHidden,
+.typingHidden span {
+    color: transparent !important;
+}
+
+.typingActive,
+.typingActive span {
+    color:white !important;
+    background-color:#9cec95 !important;
+    outline: 1px solid #6fd266;
+}
+.typingOK ,
+.typingOK span {
+    /*color:darkblue !important;
+    font-weight: bold !important;*/
+}
+.typingError,
+.typingError span {
+    position:relative;
+    color: #fff !important;
+    background-color: #e24d4d !important;
+    outline: 1px solid #c53535;
+}
+
+.typingErrorDragged,
+.typingErrorDragged span {
+    position:relative;
+    color: #fff !important;
+    background-color: #ff9090 !important;
+    outline: 1px solid #ee7777;
+}
+
+.typingActiveError ,
+.typingActiveError span {
+    color: #eee !important;
+    background-color: #e49827 !important;
+    outline: 1px solid #e49827;
+}
+
+.typingErrorLabel {
+    position: absolute;
+    color: white;
+    background-color: #dd5555;
+    top: -18px;
+    left: 0;
+    padding: 1px;
+    opacity: 0.6;
+}
+
+.typingReport {
+}
+#typingFinalTimeDiv {
+    width: 100px;
+}
+
+#typingMissHighlight {
+}

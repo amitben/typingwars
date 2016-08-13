@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <!--
+        DONE: Added speed tracking
+        DONE: highligh misses in code after completion
+     -->
+
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700' rel='stylesheet' type='text/css'>
+    <script src="tools.js"></script>
+    <script src="typing.js"></script>
+    <link href='typing.css' rel='stylesheet' type='text/css'>
+
+    <link rel="stylesheet" href="styles/idea.css">
+    <script src="highlight.pack.js"></script>
+
+    <style type="text/css" >
+        .CodeSelector {
+            padding: 5px;
+            cursor: pointer;
+            background-color: lightblue;
+            display: inline-block;
+            margin:5px;
+        }
+    </style>
+
+    <script type="text/alloy" alloy-tag="SampleSelector" >
+        <div>
+            <div alloy-if="!selectedSample">
+                <div>Select a lanaguage to start typing test</div>
+                <div alloy-loop="sample in model" alloy-bind-event-click="sampleSelected(sample)">
+                    <div class="CodeSelector"> {{sample.language}} - {{sample.code.length}} characters</div>
+                    <br />
+                </div>
+            </div>
+            <div alloy-if="selectedSample">
+                <div>{{selectedSample.language}}</div>
+            </div>
+    </script>
+
+    <script type="text/alloy" alloy-tag="Report">
+        <div class="typingReport">
+            <table>
+                <tr>
+                    <td>Total key strokes</td>
+                    <td>{{strokes}}</td>
+                </tr>
+                <tr>
+                    <td>Wasted strokes</td>
+                    <td>{{invalidStrokes}} ({{missedStrokes}} misses + {{draggedStrokes}} dragged + {{backspaceStrokes}} backspaces)</td>
+                </tr>
+                <tr>
+                    <td>Error rate (penalty)</td>
+                    <td>{{penalty}}%</td>
+                </tr>
+                <tr>
+                    <td>Final Time</td>
+                    <td>
+                        <div style="background-color:darkgreen; color:white">
+                            {{finalTime_min}}:{{finalTime_sec}}.{{finalTime_mil}}
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Speed</td>
+                    <td>
+                        {{strokePerSec}}/kps ({{secPerStroke}}/spk)
+                    </td>
+                </tr>
+                <tr>
+                    <td>Missed Keys</td>
+                    <td>
+                        <table>
+                            <tr>
+                                <td>Key</td>
+                                <td>Count</td>
+                                <td>Typed</td>
+                            </tr>
+                            <tr alloy-loop="key in keyMap" style="border:1px solid #aaa;">
+                                <td>{{key.key}}</td>
+                                <td>{{key.value.errorCount}}</td>
+                                <td>
+                                    <div alloy-loop="miss in key.value.array">
+                                        <b>{{miss.char}}</b> ({{miss.count}})
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+            
+        </div>
+    </script>
+
+    <script src="alloy.js"></script>
+</head>
+<body>
+    
+    <SampleSelector id="selector">
+        
+    </SampleSelector>
+    <div id="typingContainerDiv">
+        
+    </div>
+    <Report id="reportElement"></Report>
+
+    <script type="text/javascript">
+        hljs.configure({
+            tabReplace: null//, // 4 spaces
+        });
+        hljs.configure({ useBR: true });       
+
+        var selectorView = new Alloy.Scope();
+        selectorView.sampleSelected = function (sample) {
+            // removing selector
+            selectorView.$model.selectedSample = sample;
+            selectorView.update();
+            // creating typing test
+            if (window.typing) window.typing.dispose();
+            window.typing = new Typing(sample.code,
+                document.getElementById("typingContainerDiv"),
+                function (report) {
+                    var reportView = new Alloy.Scope();
+                    reportView.setModel(report);
+                    reportView.bind(document.getElementById("reportElement"));
+                });
+            hljs.initHighlighting();
+
+        }
+        
+		selectorView.setModel(
+			[
+				{
+					language:"Javascript",
+					code:"for (int i=0;i<10;++i)\n{\n\tint a=5;\n\ta=5;\n}\nif (this.charIndex >= this.codeElements.length) return;\nthis.keyCount++;\nvar keyCode = event.keyCode;\nif (keyCode === 13) keyCode = 10; // normalizing keyCode\n\t\nvar element = document.getElementById(\"type_\" + this.charIndex);\nvar charMismatch = this.codeChars[this.charIndex] !== keyCode;\nif (keyCode === 10 && !charMismatch) element.isNewLine = true;\nif (charMismatch || this.duringError) {\n\tif (!this.duringError) {\n\t\tthis.duringError = true;\n\t\tthis.errorPosition = this.charIndex;\n\t}"
+				},
+				{
+					language:"HTML",
+					code:"<div class='header'>\n\t<div class=\"versionSelector\">\n\t\t<span>Version</span>\n\t\t<select id='versionSelector' alloy-bind-event-change=\"versionChanged($domElement)\" value=\"{{selectedVersion}}\">\n\t\t\t<option alloy-if=\"selectedVersion\" value=\"{{selectedVersion}}\">{{this.selectedVersionName}}</option>\n\t\t\t<option alloy-loop=\"version in versions | WHERE version.status === 'open' | SORTASC version.name\" value=\"{{version.id}}\">{{version.name}}</option>\n\t\t</select>\n\t\t   \n\t\t<span class=\"userSelectorLabel\">Customer</span>\n\t\t<select id=\"customerSelector\" alloy-options=\"customers\" alloy-options-selected=\"{{selectedCustomer}}\" ></select>\n\t\t\n\t\t<span class=\"userSelectorLabel\">User</span>\n\t\t\n\t\t<select id=\"userSelector\" class=\"{{selectedUserId ? 'userSelectorActive' : ''}}\" alloy-bind-event-change=\"userChanged($domElement)\" value=\"0\">\n\t\t\t<option value=\"0\">-- All Users -- </option>\n\t\t\t<option alloy-loop=\"user in usersList\" value=\"{{user.id}}\">{{user.firstname}} {{user.lastname}}</option>\n\t\t</select>\n\t\t\n\t\t<span class=\"userSelectorLabel\">Show:</span>\n\t\t<select id=\"issueSelector\" class=\"{{selectedIssueType == 0 ? '' : 'userSelectorActive'}}\" alloy-bind-event-change=\"issueTypeChanged($domElement)\">\n\t\t\t<option value=\"{{selectedIssueType}}\">{{embedded.issueTypes[selectedIssueType]['name']}}</option>\n\t\t\t<option alloy-loop=\"issueType in embedded.issueTypes\" value=\"{{$iterator.index}}\">{{issueType.name}}</option>\n\t\t</select>\n\t</div>\n</div>\n"
+				},
+				{	
+					language:"C#",
+					code:"private static async Task<int> ExecuteMultiImplAsync(IDbConnection cnn, CommandDefinition command, IEnumerable multiExec)\n{\n\tint total = 0;\n\tbool wasClosed = cnn.State == ConnectionState.Closed;\n\ttry\n\t{\n\t\tif (wasClosed) await ((DbConnection)cnn).OpenAsync(command.CancellationToken).ConfigureAwait(false);\n\t\t\n\t\tCacheInfo info = null;\n\t\tstring masterSql = null;\n\t\tif ((command.Flags & CommandFlags.Pipelined) != 0)\n\t\t{\n\t\t\tconst int MAX_PENDING = 100;\n\t\t\tvar pending = new Queue<AsyncExecState>(MAX_PENDING);\n\t\t\tDbCommand cmd = null;\n\t\t\ttry\n\t\t\t{\n\t\t\t\tforeach (var obj in multiExec)\n\t\t\t\t{\n\t\t\t\t\tcmd = (DbCommand)command.SetupCommand(cnn, null);\n\t\t\t\t\tvar identity = new Identity(command.CommandText, cmd.CommandType, cnn, null, obj.GetType(), null);\n\t\t\t\t\tinfo = GetCacheInfo(identity, obj, command.AddToCache);\n\t\t\t\t\t\n\t\t\t\t\tfor (int i=0;i<pending.Count;++i)\n\t\t\t\t\t{\n\t\t\t\t\t\tvar recycled = pending.Dequeue();\n\t\t\t\t\t\ttotal += await recycled.Task.ConfigureAwait(false);\n\t\t\t\t\t\tcmd = recycled.Command;\n\t\t\t\t\t\tcmd.CommandText = masterSql;\n\t\t\t\t\t\tcmd.Parameters.Clear();\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t\tfinally\n\t\t\t{\n\t\t\t\twhile (pending.Count != 0)\n\t\t\t\t\tpending.Dequeue().Command.Dispose();\n\t\t\t}\n\t\t}\n\t}\n\tfinally\n\t{\n\t\tif (wasClosed) cnn.Close();\n\t}\n\treturn total;\n}"
+				}
+			]);
+		selectorView.bind(document.getElementById("selector"));
+        //var code = "a='test'; //c\r\nfor (int i=0;i<10;++i)\n{\n\tint a=5;\n\ta=5;\n}\n";
+        //code = "a=1;";
+        var code = "for (int i=0;i<10;++i)\n{\n\tint a=5;\n\ta=5;\n}\nif (this.charIndex >= this.codeElements.length) return;\nthis.keyCount++;\nvar keyCode = event.keyCode;\nif (keyCode === 13) keyCode = 10; // normalizing keyCode\n\t\nvar element = document.getElementById(\"type_\" + this.charIndex);\nvar charMismatch = this.codeChars[this.charIndex] !== keyCode;\nif (keyCode === 10 && !charMismatch) element.isNewLine = true;\nif (charMismatch || this.duringError) {\n\tif (!this.duringError) {\n\t\tthis.duringError = true;\n\t\tthis.errorPosition = this.charIndex;\n\t}";
+
+    </script>
+</body>
+</html>
